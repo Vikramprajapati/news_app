@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_news_app/model/article_model.dart';
 import 'package:flutter_news_app/model/category_model.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_news_app/screen/all_news.dart';
 import 'package:flutter_news_app/screen/article_view.dart';
 import 'package:flutter_news_app/screen/blog_tile.dart';
 import 'package:flutter_news_app/screen/category_list.dart';
+import 'package:flutter_news_app/screen/login.dart';
 import 'package:flutter_news_app/service/data.dart';
 import 'package:flutter_news_app/service/news.dart';
 import 'package:flutter_news_app/service/slider_data.dart';
@@ -60,148 +62,162 @@ class _HomeState extends State<Home> {
               Text(
                 "Adda",
                 style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
+                TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
               ),
             ],
           ),
           centerTitle: true,
+          actions: [
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut().then((value) {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => Login(),));
+                },);
+              },
+            )
+          ],
           elevation: 0.0,
         ),
         body: _loading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                child: Column(
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(left: 10),
+                height: 70,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  scrollDirection: Axis.horizontal,
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    return CategoryTile(
+                      image: categories[index].image,
+                      categoryName: categories[index].categoryName,
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 30,
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 10, right: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      margin: const EdgeInsets.only(left: 10),
-                      height: 70,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        itemCount: categories.length,
-                        itemBuilder: (context, index) {
-                          return CategoryTile(
-                            image: categories[index].image,
-                            categoryName: categories[index].categoryName,
-                          );
-                        },
-                      ),
+                    Text(
+                      "Breaking News!",
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Breaking News!",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        AllNews(news: "Breaking"),
-                                  ));
-                            },
-                            child: Text(
-                              "View All!",
-                              style: TextStyle(
-                                  decoration: TextDecoration.underline,
-                                  color: Colors.blue,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                    const SizedBox(
-                      height: 15,
-                    ),
-                    CarouselSlider.builder(
-                        itemCount: sliders.length,
-                        itemBuilder: (context, index, realIndex) {
-                          String? res = sliders[index].urlToImage;
-                          String? res1 = sliders[index].title;
-                          return buildImage(
-                              res!, index, res1!, sliders[index].url!);
-                        },
-                        options: CarouselOptions(
-                          height: 250,
-                          autoPlay: true,
-                          enlargeCenterPage: true,
-                          enlargeStrategy: CenterPageEnlargeStrategy.height,
-                          onPageChanged: (index, reason) {
-                            setState(() {
-                              activeIndex = index;
-                            });
-                          },
-                        )),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    buildIndicator(),
-                    const SizedBox(
-                      height: 30,
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(left: 10, right: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            "Trending News!",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                          GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          AllNews(news: "Treading"),
-                                    ));
-                              },
-                              child: Text(
-                                "View All!",
-                                style: TextStyle(
-                                    decoration: TextDecoration.underline,
-                                    color: Colors.blue,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold),
-                              ))
-                        ],
-                      ),
-                    ),
-                    SizedBox(
-                      height: 10,
-                    ),
-                    Container(
-                      height: MediaQuery.of(context).size.height * 0.5,
-                      child: ListView.builder(
-                        itemCount: articles.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 10.0),
-                            child: BlogTile(
-                                url: articles[index].url!,
-                                imageUrl: articles[index].urlToImage!,
-                                desc: articles[index].description!,
-                                title: articles[index].title!),
-                          );
-                        },
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AllNews(news: "Breaking"),
+                            ));
+                      },
+                      child: Text(
+                        "View All!",
+                        style: TextStyle(
+                            decoration: TextDecoration.underline,
+                            color: Colors.blue,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold),
                       ),
                     )
                   ],
                 ),
-              ));
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              CarouselSlider.builder(
+                  itemCount: sliders.length,
+                  itemBuilder: (context, index, realIndex) {
+                    String? res = sliders[index].urlToImage;
+                    String? res1 = sliders[index].title;
+                    return buildImage(
+                        res!, index, res1!, sliders[index].url!);
+                  },
+                  options: CarouselOptions(
+                    height: 250,
+                    autoPlay: true,
+                    enlargeCenterPage: true,
+                    enlargeStrategy: CenterPageEnlargeStrategy.height,
+                    onPageChanged: (index, reason) {
+                      setState(() {
+                        activeIndex = index;
+                      });
+                    },
+                  )),
+              const SizedBox(
+                height: 30,
+              ),
+              buildIndicator(),
+              const SizedBox(
+                height: 30,
+              ),
+              Padding(
+                padding: EdgeInsets.only(left: 10, right: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "Trending News!",
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    AllNews(news: "Treading"),
+                              ));
+                        },
+                        child: Text(
+                          "View All!",
+                          style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              color: Colors.blue,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold),
+                        ))
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 10,
+              ),
+              Container(
+                height: MediaQuery
+                    .of(context)
+                    .size
+                    .height * 0.5,
+                child: ListView.builder(
+                  itemCount: articles.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: BlogTile(
+                          url: articles[index].url!,
+                          imageUrl: articles[index].urlToImage!,
+                          desc: articles[index].description!,
+                          title: articles[index].title!),
+                    );
+                  },
+                ),
+              )
+            ],
+          ),
+        ));
   }
 
   //build image in slider
@@ -223,7 +239,10 @@ class _HomeState extends State<Home> {
             child: CachedNetworkImage(
               height: 250,
               fit: BoxFit.cover,
-              width: MediaQuery.of(context).size.width,
+              width: MediaQuery
+                  .of(context)
+                  .size
+                  .width,
               imageUrl: image,
             ),
           ),
@@ -231,7 +250,10 @@ class _HomeState extends State<Home> {
             margin: const EdgeInsets.only(top: 170),
             height: 250,
             padding: const EdgeInsets.only(left: 10),
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             decoration: const BoxDecoration(
                 color: Colors.black26,
                 borderRadius: BorderRadius.only(
@@ -254,7 +276,8 @@ class _HomeState extends State<Home> {
   }
 
   // build dot indicator
-  Widget buildIndicator() => AnimatedSmoothIndicator(
+  Widget buildIndicator() =>
+      AnimatedSmoothIndicator(
         activeIndex: activeIndex,
         count: 5,
         effect: const SlideEffect(dotHeight: 15, dotWidth: 15),
